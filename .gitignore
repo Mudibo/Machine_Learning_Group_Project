@@ -3,6 +3,27 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.env/
+
+# Data
+data/raw/*
+data/processed/*
+
+# Outputs
+outputs/*
+
+# OS
+.DS_Store
+Thumbs.db
 # User-specific files
 *.rsuser
 *.suo
