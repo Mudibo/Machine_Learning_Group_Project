@@ -1,0 +1,52 @@
+# Byte-compiled and cache files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Logs and local settings
+*.log
+*.tmp
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Model artifacts and experiment outputs
+models/*
+!models/.gitkeep
+*.pkl
+*.joblib
+*.h5
+*.onnx
+mlruns/
+
+# Data artifacts (keep folder structure but not large files)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE files
+.vscode/
+.idea/
