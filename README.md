@@ -1,1 +1,4 @@
-# Machine_Learning_Group_Project
+# Machine Learning Group Project Starter
+
+## Project Title
+Machine Learning Group Project
