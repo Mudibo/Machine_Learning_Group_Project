@@ -38,8 +38,10 @@ mlruns/
 # Data artifacts (keep folder structure but not large files)
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/README.md
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/README.md
 
 # OS-generated files
 .DS_Store
