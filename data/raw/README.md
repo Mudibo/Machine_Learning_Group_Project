@@ -1,31 +1,44 @@
 # Raw Data
 
-This directory holds the original, unmodified datasets as downloaded from
-their sources. Files are not committed to the repository — each team member
-downloads them locally per the instructions in `../README.md`.
+This directory holds the original, unmodified dataset as downloaded from its source. Files are not committed to the repository — each team member downloads them locally per the instructions in `../README.md`.
 
 ## Expected Contents
 
-After downloading and unzipping, this folder should contain:
+After downloading and unzipping the Kaggle archive, this folder should contain the following CSVs (the Kaggle dump includes more files than listed; only the ones below are used in this project):
 
-### From Webis Clickbait Challenge 2017
-- `clickbait17-train-170331/`
-  - `instances.jsonl` — one tweet per line, with post text, target article
-    title, paragraphs, keywords, and timestamps.
-  - `truth.jsonl` — one record per tweet, with annotator judgments,
-    `truthMean` (continuous 0–1 clickbait score), and `truthClass`
-    (binary label).
-- `clickbait17-test-170720/`
-  - Same structure as the training split.
+### `races.csv`
+Race-level metadata.
+- `raceId` — primary key
+- `year` — season
+- `round` — race number within the season
+- `circuitId` — foreign key to `circuits.csv`
+- `name` — Grand Prix name
+- `date` — race date
 
-Join `instances.jsonl` and `truth.jsonl` on the `id` field to produce a
-working dataframe.
+### `results.csv`
+Per-driver, per-race results. This is the central table.
+- `resultId` — primary key
+- `raceId` — foreign key to `races.csv`
+- `driverId` — foreign key to `drivers.csv`
+- `constructorId` — foreign key to `constructors.csv`
+- `grid` — starting grid position
+- `position` — finishing position (null if did not finish)
+- `positionOrder` — finishing order including DNFs (always populated)
+- `points` — championship points earned
+- `laps` — laps completed
+- `statusId` — foreign key to `status.csv`
 
-### From Anand Kaggle Clickbait
-- `clickbait_data.csv` (or similarly named) with columns:
-  - `headline` — the news headline text
-  - `clickbait` — binary label (1 = clickbait, 0 = not clickbait)
+### `qualifying.csv`
+Qualifying session results.
+- `qualifyId`, `raceId`, `driverId`, `constructorId`
+- `position` — qualifying position
+- `q1`, `q2`, `q3` — fastest lap times in each qualifying segment
+
+### `drivers.csv`, `constructors.csv`, `circuits.csv`, `status.csv`
+Reference tables — names, codes, nationalities, locations, and status descriptions.
+
+## Working Dataset
+The Sprint 1 cleaned output will join `results` with `races`, `qualifying`, `drivers`, `constructors`, and `circuits` on the appropriate keys, producing a single driver-race-level table for modelling. Details will be documented in `../processed/README.md` once produced.
 
 ## Do Not Modify
-Treat everything in this folder as read-only. All cleaning and
-transformation outputs belong in `../processed/`.
+Treat everything in this folder as read-only. All cleaning and transformation outputs belong in `../processed/`.
