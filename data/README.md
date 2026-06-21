@@ -12,35 +12,25 @@ This folder stores all project datasets and derived data artifacts.
 - Store preprocessing outputs in `processed/` with clear naming and version notes.
 - Document dataset provenance and assumptions in Sprint 1 artifacts.
 
-## Datasets Used
+## Dataset Used
 
-### Primary: Webis Clickbait Challenge 2017 (Webis-Clickbait-17)
-- **Source:** Zenodo record 5530410 — https://zenodo.org/records/5530410
-- **Original project page:** https://webis.de/data/webis-clickbait-17.html
-- **Files used:**
-  - `clickbait17-train-170331.zip` (147.8 MB) — training split
-  - `clickbait17-test-170720.zip` (934.7 MB) — test split
-- **Files ignored:** the five `archives-*` zips (~100 GB total) contain full
-  web archives of linked articles and are not needed for this project.
-- **Content:** ~38,000 Twitter posts from 27 US news outlets, each annotated
-  on a 4-point clickbait-strength scale (0.0, 0.33, 0.66, 1.0) by five human
-  annotators. Provides both a continuous score (`truthMean`) and a binary
-  label (`truthClass`).
-
-### Secondary: Anand Clickbait Headlines (Kaggle)
-- **Source:** https://www.kaggle.com/datasets/amananandrai/clickbait-dataset
-- **Content:** ~32,000 news headlines with binary clickbait labels.
-  Clickbait sources include BuzzFeed, Upworthy, ViralNova; non-clickbait
-  sources include NYT, The Guardian, WikiNews.
-- **Role in project:** secondary corroboration of findings from the primary
-  dataset; used to check whether linguistic patterns generalise across
-  headline-style and tweet-style text.
+### Formula 1 World Championship (1950–2024)
+- **Source (Kaggle):** https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020
+- **Original source:** Ergast Motor Racing Developer API (http://ergast.com/mrd/), a long-standing open dataset maintained for the F1 community.
+- **Content:** A normalised relational dataset spanning every Formula 1 season from 1950 to 2024, covering races, results, drivers, constructors, qualifying sessions, lap times, pit stops, sprint races, status codes and circuits.
+- **Files used in this project (subset of the full dump):**
+  - `races.csv` — race metadata (season, round, circuit, date)
+  - `results.csv` — race results per driver (finishing position, points, status)
+  - `qualifying.csv` — qualifying session results
+  - `drivers.csv` — driver reference data
+  - `constructors.csv` — team reference data
+  - `circuits.csv` — circuit reference data
+  - `status.csv` — finish status codes (finished, retired, disqualified, etc.)
+- **Approximate scale:** ~25,000 driver-race entries across ~1,100 races, ~860 drivers, and ~210 constructors.
+- **Target variable:** finishing position (`positionOrder` in `results.csv`). May be modelled as ordinal classification (top 3, points-scoring, finished) or regression depending on Sprint 2 decisions.
 
 ## How to Obtain the Data
-The raw zip files are not committed to this repository (see `.gitignore`).
-Each team member must download them locally into `data/raw/` from the
-sources listed above before running any notebooks.
+The raw CSV files are not committed to this repository (see `.gitignore`). Each team member should download the dataset from the Kaggle link above and place the unzipped CSV files into `data/raw/`.
 
 ## Schema and Data Dictionary
-See `data/raw/README.md` for raw file schemas and `data/processed/README.md`
-(produced in Sprint 1) for cleaned dataset schemas.
+See `data/raw/README.md` for expected file contents and column descriptions, and `data/processed/README.md` (produced in Sprint 1) for cleaned dataset schemas.
