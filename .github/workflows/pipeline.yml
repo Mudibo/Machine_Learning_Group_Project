@@ -1,0 +1,65 @@
+name: f1-veteran-pipeline
+
+on:
+  schedule:
+    - cron: "0 21 * * 0" # Every Sunday at 21:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ingest Results (historical baseline refresh)
+        env:
+          INGEST_MODE: historical
+          START_YEAR: "2022"
+          END_YEAR: "2026"
+          OUTPUT_CSV_PATH: data/raw/jolpica_results_master.csv
+        run: python src/preprocessing/ingest_jolpica_results.py
+
+      - name: Ingest Qualifying and Build Canonical
+        env:
+          INGEST_MODE: historical
+          START_YEAR: "2022"
+          END_YEAR: "2026"
+          RESULTS_MASTER_CSV_PATH: data/raw/jolpica_results_master.csv
+          QUALIFYING_MASTER_CSV_PATH: data/raw/jolpica_qualifying_master.csv
+          CANONICAL_OUTPUT_CSV_PATH: data/raw/f1_canonical_master.csv
+        run: python src/preprocessing/ingest_jolpica_qualifying.py
+
+      - name: Build Veteran Feature Matrix
+        env:
+          CANONICAL_INPUT_CSV_PATH: data/raw/f1_canonical_master.csv
+          VETERAN_OUTPUT_CSV_PATH: data/processed/veteran_training_matrix.csv
+        run: python src/preprocessing/build_veteran_features.py
+
+      - name: Train Ranker and Generate SHAP Report
+        env:
+          VETERAN_MATRIX_INPUT_PATH: data/processed/veteran_training_matrix.csv
+        run: python src/models/train_ranker.py
+
+      - name: Upload Pipeline Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: f1-veteran-artifacts
+          path: |
+            data/raw/jolpica_results_master.csv
+            data/raw/jolpica_qualifying_master.csv
+            data/raw/f1_canonical_master.csv
+            data/processed/veteran_training_matrix.csv
+            models/f1_ranker_model.pkl
+            outputs/reports/shap_summary.png
