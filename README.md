@@ -117,6 +117,39 @@ python src/models/train_ranker.py
 streamlit run app.py
 ```
 
+## Vercel API Deployment (Main Branch)
+
+This repository deploys the full dashboard (live Grand Prix simulator and season
+retrospective, ported from the Streamlit app) at `/` and a Python serverless API
+at `/api/*`. Model artifacts are pulled at runtime from the `model-registry`
+branch, so the daily pipeline refresh shows up without a redeploy.
+
+Runtime/deploy files:
+
+- `public/index.html` (dashboard served statically at `/`)
+- `api/index.py` (serverless API)
+- `vercel.json` (function config + install command)
+- `requirements-vercel.txt` (minimal Python runtime dependencies)
+
+Deploy configuration checklist:
+
+- In Vercel `Project Settings -> Git`, set `Production Branch` to `main`.
+- Do not use `model-registry` as the Production Branch (it is for artifact snapshots).
+- Keep repository root as the project root directory.
+
+Health check after deploy:
+
+```bash
+curl https://<your-vercel-domain>/api/health
+```
+
+Route checks after deploy:
+
+```bash
+curl https://<your-vercel-domain>/
+curl https://<your-vercel-domain>/api
+```
+
 ## GitHub Actions Automation (Weekly + Race-Week)
 
 This repository includes a scheduled workflow at `.github/workflows/pipeline.yml` that keeps the model refreshed automatically.
@@ -124,8 +157,21 @@ This repository includes a scheduled workflow at `.github/workflows/pipeline.yml
 ### Automated schedule
 
 - Runs daily at 02:15 UTC.
+- Runs additional race-window refreshes every 6 hours from Friday through Monday (UTC).
 - Uses `historical` ingestion mode from `START_YEAR=2022` through the current year.
 - Rebuilds datasets, retrains rankers, and uploads artifacts.
+
+### Streamlit keepalive automation
+
+To reduce Streamlit inactivity pauses, the repository includes a keepalive
+workflow at `.github/workflows/streamlit-keepalive.yml` that pings the deployed
+app every 30 minutes.
+
+- Health endpoint: `/_stcore/health`
+- Root endpoint: `/`
+
+Note: on free hosting tiers, keepalive is best-effort and may not fully bypass
+provider inactivity policies.
 
 ### Manual trigger options
 
@@ -169,6 +215,22 @@ If Streamlit shows missing artifacts such as `models/f1_xgb_ranker.pkl` or
 This recovery flow is useful because GitHub Actions artifacts are not a
 persistent model registry for Streamlit deployments.
 
+### Durable model storage
+
+The workflow now writes a durable snapshot branch named `model-registry` that
+stores the latest deployable artifacts:
+
+- `models/f1_xgb_ranker.pkl`
+- `models/f1_lgb_ranker.pkl`
+- `data/raw/f1_canonical_master.csv`
+- `data/processed/veteran_training_matrix.csv`
+- `outputs/reports/xgb_shap_summary.png`
+- `outputs/reports/lgb_shap_summary.png`
+- `outputs/reports/refresh_metadata.json`
+
+The Streamlit app uses this branch as a fallback source if local artifacts are
+missing during startup.
+
 ### Streamlit race-week auto-refresh behavior
 
 The app now derives race-week context dynamically from refreshed data:
@@ -181,6 +243,10 @@ The app now derives race-week context dynamically from refreshed data:
 After a race weekend, run the data/training pipeline (or wait for scheduled
 GitHub Actions) and restart/reload Streamlit to reflect the new current vs
 historical split.
+
+The app sidebar also displays `Last data/model refresh` using
+`outputs/reports/refresh_metadata.json` (or filesystem timestamps as fallback)
+for run-to-run trust and traceability.
 
 ## Primary Artifacts Produced
 

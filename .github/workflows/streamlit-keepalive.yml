@@ -1,0 +1,48 @@
+name: streamlit-keepalive
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # every 30 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe Streamlit health endpoint
+        env:
+          APP_BASE_URL: https://f1-veteran-ranker.streamlit.app
+        run: |
+          set -e
+          HTTP_CODE=$(curl --silent --show-error --output /dev/null \
+            --write-out "%{http_code}" \
+            --max-redirs 0 \
+            --user-agent "GitHub-Actions-keepalive" \
+            "$APP_BASE_URL/_stcore/health")
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 400 ]]; then
+            echo "Health endpoint responded with acceptable status: $HTTP_CODE"
+          else
+            echo "Unexpected health endpoint status: $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Probe Streamlit root endpoint
+        env:
+          APP_BASE_URL: https://f1-veteran-ranker.streamlit.app
+        run: |
+          set -e
+          HTTP_CODE=$(curl --silent --show-error --output /dev/null \
+            --write-out "%{http_code}" \
+            --max-redirs 0 \
+            --user-agent "GitHub-Actions-keepalive" \
+            "$APP_BASE_URL/")
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 400 ]]; then
+            echo "Root endpoint responded with acceptable status: $HTTP_CODE"
+          else
+            echo "Unexpected root endpoint status: $HTTP_CODE"
+            exit 1
+          fi
